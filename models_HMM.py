@@ -203,9 +203,11 @@ class StepHMM_better():
         return self.Rh, self.Rl
     
     def simulate_chain(self, T):
+        jump_step = np.Infinity
         chain = np.zeros(T+self.r)
         for i in range(1,T+self.r):
             next_state = np.random.choice([chain[i-1], chain[i-1] + 1], p=[1-self.p, self.p])
+            chain[i] = next_state
             if next_state == self.r:
                 jump_step = i - self.r
                 chain[i:] = self.r
@@ -245,11 +247,12 @@ class StepHMM_better():
 
         ts = np.arange(T)
 
-        spikes, jumps, rates = [], [], []
+        chains, spikes, jumps, rates = [], [], [], []
         for _ in range(Ntrials):
             # sample jump time
             chain, jump_step = self.simulate_chain(T)
             jumps.append(jump_step)
+            chains.append(chain)
             
             rate = np.ones(T) * self.x0 * self.Rh
             rate[ts >= jump_step] = self.Rh
@@ -258,6 +261,6 @@ class StepHMM_better():
             spikes.append(self.emit(rate))
 
         if get_rate:
-            return np.array(spikes), np.array(jumps), np.array(rates)
+            return np.array(chains), np.array(spikes), np.array(jumps), np.array(rates)
         else:
-            return np.array(spikes), np.array(jumps)
+            return np.array(chains), np.array(spikes), np.array(jumps)
