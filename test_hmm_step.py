@@ -16,10 +16,10 @@ T = 100
 # plt.show()
 
 plt.xlim((0,T))
-for m in [20,40,60,80]:
-    step_better = StepHMM_better(m,r,x0)
-    chains, spikes, jumps, rates = step_better.simulate(N_trials, T)
-    plt.hist(jumps[jumps <= T], bins=int(T/10), label=f"{m=}")
-plt.title(f"Jump times for better Step HMM, {r=}")
+for r in [1,5,10,100,1000]:
+    step_naive = StepHMM_naive(m,r,x0)
+    chains, spikes, jumps, rates = step_naive.simulate(N_trials, T)
+    plt.hist(jumps[jumps <= T], bins=int(T/10), label=f"{r=}")
+plt.title(f"Jump times for naive Step HMM, {m=}")
 plt.legend()
 plt.show()

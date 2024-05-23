@@ -97,7 +97,7 @@ class StepHMM_naive():
         self.x0 = x0
 
         self.p = r / (m + r)
-        self.q = self.p   # tranition matrix is [[1-q, q], [0, 1]]
+        self.q = 1/self.m   # tranition matrix is [[1-q, q], [0, 1]]
         self.trans_mtx = np.array([[1-self.q, self.q], [0, 1]])
 
         self.Rh = Rh
@@ -120,14 +120,14 @@ class StepHMM_naive():
     
     def simulate_chain(self, T):
         chain = np.ones(T)*self.x0
+        jump_step = np.Infinity
         for i in range(1,T):
             next_state = np.random.choice([0, 1], p=[1-self.q, self.q])
             if next_state == 1:
                 jump_step = i
                 chain[i:] = 1
                 break
-        rate = chain * self.Rh
-        return rate, jump_step
+        return chain, jump_step
 
     def emit(self, rate):
         """
@@ -160,20 +160,21 @@ class StepHMM_naive():
         dt = 1 / T
         self.dt = dt
 
-        spikes, jumps, rates = [], [], []
+        chains, spikes, jumps, rates = [], [], [], []
         for _ in range(Ntrials):
             # sample jump time
-            rate, jump_step = self.simulate_chain(T)
+            chain, jump_step = self.simulate_chain(T)
             jumps.append(jump_step)
-            
+            rate = chain * self.Rh
             rates.append(rate)
+            chains.append(chain)
 
             spikes.append(self.emit(rate))
 
         if get_rate:
-            return np.array(spikes), np.array(jumps), np.array(rates)
+            return np.array(chains), np.array(spikes), np.array(jumps), np.array(rates)
         else:
-            return np.array(spikes), np.array(jumps)
+            return np.array(chains), np.array(spikes), np.array(jumps)
     
 
 
