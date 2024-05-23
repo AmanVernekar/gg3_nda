@@ -2,6 +2,7 @@ import numpy as np
 from approximate_mc import get_interval, get_init_distr, get_transition_mtx, simulate_chain
 from models import gamma_isi_point_process
 
+
 class HMM_Ramp_Model():
         """
         Simulator of the HMM approximation of the Ramping Model
@@ -30,6 +31,7 @@ class HMM_Ramp_Model():
 
             self.isi_gamma_shape = isi_gamma_shape
             self.dt = dt
+            self.state_space, self.dx = get_interval(self.K)
 
         @property
         def params(self):
@@ -73,12 +75,12 @@ class HMM_Ramp_Model():
             rates:  shape = (Ntrial, T); rates[j] is the rate time-series, r_t, in trial j (returned only if get_rate=True)
             """
             # set dt (time-step duration in seconds) such that trial duration is always 1 second, regardless of T.
-            state_space, dt = get_interval(self.K)
-            self.dt = dt
-            pi = get_init_distr(state_space, self.x0, self.sigma, dt)
-            trans_mtx = get_transition_mtx(state_space, self.beta, self.sigma, dt)
 
-            xs = simulate_chain(pi, trans_mtx, Ntrials, T, round(self.x0 * self.K), state_space)
+            self.dt = 1.0/ T
+            self.pi = get_init_distr(self.state_space, self.x0, self.sigma, self.dx, self.dt)
+            self.trans_mtx = get_transition_mtx(self.state_space, self.beta, self.sigma, self.dx, self.dt)
+
+            xs = simulate_chain(self.pi, self.trans_mtx, Ntrials, T, round(self.x0 * self.K), self.state_space)
 
             rates = self.f_io(xs)  # shape = (Ntrials, T)
 
