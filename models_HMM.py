@@ -195,6 +195,7 @@ class StepHMM_better():
         
         self.isi_gamma_shape = isi_gamma_shape
         self.dt = dt
+        self.trans_mtx = np.diag([1-self.p]*r + [1]) + np.diag([self.p]*r, 1)
     
     @property
     def params(self):
